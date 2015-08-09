@@ -1,13 +1,12 @@
-#include <sys/types.h>
+#include <sys/types.h> //
 #include <sys/socket.h> 
-#include <netdb.h>
-#include <stdlib.h>
-#include <string.h>
+#include <netdb.h> //
+#include <stdlib.h> //
+#include <string.h> //
+#include <netinet/in.h>
 
-#include <stdio.h>
 
-
-#define PORT "1025"
+#define PORT 7070
 
 /*
  * This file implements net operations
@@ -19,11 +18,33 @@
  */
 
 
-size_t raw_send(const char *addr, const char *port, const char *data, int flags)
+int raw_connect(const char *addr, unsigned short port /*const char *port*/)
 /* TODO:
 	- implement arg 'flags'
 */
 {
+
+	int sockd, retval;
+	struct sockaddr_in servaddr;
+
+
+	sockd = socket(AF_INET, SOCK_STREAM, 0);
+
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = inet_addr(addr);
+	servaddr.sin_port = htons(port);
+
+	retval = connect(sockd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+
+	return sockd;
+
+	//send(sockd, data, count, 0);
+
+	//close(sockd);
+	//n=recvfrom(sockfd,recvline,10000,0,NULL,NULL);
+
+/*
 	int sockd, retval;
 	struct addrinfo *addr_s;
 
@@ -35,12 +56,25 @@ size_t raw_send(const char *addr, const char *port, const char *data, int flags)
 
 	// TODO: some comparations for 'retval'
 
-	retval = send(sockd, data, sizeof(data), 0);
+	retval = send(sockd, data, strlen(data), 0);
+
+	close(sockd);
 
 	return (size_t)retval;
+*/
 }
 
-int raw_recv(char *buf, size_t buf_len)
+size_t raw_send(int sockd, char *data, size_t n)
+{
+	return send(sockd, data, n, 0);
+}
+
+size_t raw_recv(int sockd, char *buf, size_t n)
+{
+	return recv(sockd, buf, n, 0);
+}
+
+int raw_listen(char *buf, size_t buf_len)
 {
 	struct addrinfo *addr_s, hints;
 	struct sockaddr_storage p_addr;
@@ -71,4 +105,9 @@ int raw_recv(char *buf, size_t buf_len)
 	close(peerd);
 
 	return retval;
+}
+
+int raw_close(int sockd)
+{
+	return close(sockd);
 }
