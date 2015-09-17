@@ -53,14 +53,11 @@ int getwork(char *prnt, u_short count, char **dict)
 	if(sockd < 0)
 		return -1;
 
-	if(send_getw_packet(sockd, &p) != GETW_LEN)
-		return -1;
+	send_getw_packet(sockd, &p);
 
-	if(recv_getw_packet(sockd, &p, dict) != GETW_LEN)
-		return -1;
+	recv_getw_packet(sockd, &p, dict);
 
-	if(send_getw_packet(sockd, &p) != GETW_LEN)
-		return -1;
+	send_getw_packet(sockd, &p); 
 
 	raw_close(sockd);
 }

@@ -57,18 +57,13 @@ int recv_getw_packet(int sockd, struct getw_packet *packet, char **dict)
 {
 	char *data = malloc(GETW_LEN);
 
-	if(raw_recv(sockd, data, HI_LEN) != HI_LEN)
-		return -1;
-
-	if(fmt_packet(data, packet, GETW_LEN))
-		return ERR_MALFORMEDPKT;
+	raw_recv(sockd, data, GETW_LEN);
+	fmt_packet(data, packet, GETW_LEN);
 
 	data = realloc(data, packet->length);
 
-	if(raw_recv(sockd, data, packet->length) != packet->length)
-		return -1;
-
-	fmt_work(data, dict, packet->length);
+	raw_recv(sockd, data, packet->length);
+	fmt_work(data, dict, packet->count);
 
 	free(data);
 }
