@@ -1,3 +1,8 @@
+#!/usr/bin/python
+
+## ./getwork 127.0.0.1 4
+## hardcoded length 4        JUST FOR TEST
+
 import socket
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -13,4 +18,4 @@ r = p.recv(20)
 
 print(r.encode("hex"))
 
-p.send("\x02\x02\x04\x00\x00\x00\x00\x00\x0f\x00\x00\x00\x00\x00\x00\x00aa;bbb;ccc;ddd")
+p.send("\x02\x02\x05\x00\x00\x00\x00\x00\x1b\x00\x00\x00\x00\x00\x00\x00aaaa;bb;ccc;ddd;0123456789\x00")

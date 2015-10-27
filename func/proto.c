@@ -7,9 +7,9 @@ int _registered = 0;
 
 /* char *prnt can be implemented with global val from config file */
 
-int register_me(char *prnt, char nodetype)
+int registerme(int sockd, char nodetype)
 {
-	int sockd;
+	//int sockd;
 
 	struct hi_packet p = {
 		.op = OP_HI,
@@ -17,7 +17,7 @@ int register_me(char *prnt, char nodetype)
 		.node_type = nodetype
 	};
 
-	sockd = raw_connect(prnt, 7070);
+	//sockd = raw_connect(prnt, 7070);
 	if(sockd < 0)
 		return -1;
 
@@ -27,7 +27,7 @@ int register_me(char *prnt, char nodetype)
 	if(recv_hi_packet(sockd, &p) != HI_LEN)
 		return -1;
 
-	raw_close(sockd);
+	//raw_close(sockd);
 
 	if(p.hi_op == HI_REGOK) {
 		_registered = 1;
@@ -38,9 +38,9 @@ int register_me(char *prnt, char nodetype)
 	}
 }
 
-int getwork(char *prnt, u_short count, char **dict)
+u_short getwork(int sockd, u_short count, char **dict)
 {
-	int sockd;
+	//int sockd;
 
 	struct getw_packet p = {
 		.op = OP_GETW,
@@ -49,7 +49,8 @@ int getwork(char *prnt, u_short count, char **dict)
 		.length = 0
 	};
 
-	sockd = raw_connect(prnt, 7070);
+
+	//sockd = raw_connect(prnt, 7070);
 	if(sockd < 0)
 		return -1;
 
@@ -57,7 +58,11 @@ int getwork(char *prnt, u_short count, char **dict)
 
 	recv_getw_packet(sockd, &p, dict);
 
+	p.getw_op = GETW_ACPT;
+
 	send_getw_packet(sockd, &p); 
 
-	raw_close(sockd);
+	//raw_close(sockd);
+
+	return p.count;
 }
