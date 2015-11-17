@@ -44,14 +44,49 @@ int recv_hi_packet(int sockd, struct hi_packet *packet)
 }
 
 
-int send_getw_packet(int sockd, struct getw_packet *packet)
-{
-	char data[GETW_LEN];
 
-	if(fmt_packet(packet, &data, GETW_LEN))
+int send_hash_packet(int sockd, struct hash_packet *packet, char *data, u_char len)
+{
+	char rawp[HASH_LEN + len];
+
+	if(fmt_packet(packet, &rawp, HASH_LEN))
 		return ERR_MALFORMEDPKT;
 
-	return raw_send(sockd, &data, HI_LEN);
+	fmt_packet(data, (&rawp) + HASH_LEN, len);
+
+	return raw_send(sockd, &rawp, HASH_LEN + len);
+}
+int recv_hash_packet(int sockd, struct getw_packet *packet, char **hash, char **plain)
+{
+	char *data = malloc(HASH_LEN);
+
+	raw_recv(sockd, data, HASH_LEN);
+	fmt_packet(data, packet, HASH_LEN);
+
+	data = realloc(data, packet->hash_len + packet->plain_len);
+
+	raw_recv(sockd, data, packet->hash_len + packet->plain_len);
+
+	*hash = malloc(packet->hash_len);
+	*plain = malloc(packet->plain_len);
+
+	memcpy(hash, data, packet->hash_len);
+	memcpy(hash + packet->hash_len, data, packet->plain_len);
+
+	//free(data);
+	//Not necessary, **dict pointing to it. Free it with dict
+}
+
+
+
+int send_getw_packet(int sockd, struct getw_packet *packet)
+{
+	char rawp[GETW_LEN];
+
+	if(fmt_packet(packet, &rawp, GETW_LEN))
+		return ERR_MALFORMEDPKT;
+
+	return raw_send(sockd, &rawp, HI_LEN);
 }
 int recv_getw_packet(int sockd, struct getw_packet *packet, char **dict)
 {

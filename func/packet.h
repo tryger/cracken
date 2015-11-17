@@ -7,11 +7,12 @@
 
 /* OPCODES */
 #define OP_HI 0x01
-#define OP_GETW 0x02
-#define OP_DONEW 0x03
+#define OP_HASH 0x02
+#define OP_GETW 0x03
 
 /* PACKET LENGTHS */
 #define HI_LEN sizeof(struct hi_packet)
+#define HASH_LEN sizeof(struct hash_packet)
 #define GETW_LEN sizeof(struct getw_packet)
 
 
@@ -25,6 +26,21 @@ struct hi_packet {
 	u_char op;
 	u_char hi_op;
 	u_char node_type;
+};
+
+/* HASH packet*/
+#define HASH_RQST 0x01
+#define HASH_OFFR 0x02
+#define HASH_ACPT 0x03
+#define HASH_DROP 0x04
+#define HASH_DONE 0x05
+
+struct hash_packet {
+	u_char op;
+	u_char algorithm;
+	u_char id;
+	u_char hash_len;
+	u_int plain_len;
 };
 
 /* GETW packet */
@@ -43,8 +59,6 @@ struct getw_packet {
 	u_short count;
 	u_long length;
 };
-
-
 
 /* ERROR CODES */
 #define ERR_MALFORMEDPKT 1
