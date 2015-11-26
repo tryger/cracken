@@ -34,13 +34,15 @@ struct hi_packet {
 #define HASH_ACPT 0x03
 #define HASH_DROP 0x04
 #define HASH_DONE 0x05
+#define HASH_OK   0x06
 
 struct hash_packet {
 	u_char op;
+	u_char hash_op;
 	u_char algorithm;
 	u_char id;
-	u_char hash_len;
-	u_int plain_len;
+	u_short hash_len;
+	u_short plain_len;
 };
 
 /* GETW packet */

@@ -3,9 +3,10 @@
 
 #define DEF_COUNT 100 // just for test
 
-int node_smpl_loop(char *hash, char *prnt)
+int node_smpl_loop(char *prnt)
 {
 	char **dict = malloc(DEF_COUNT * sizeof(char *));
+	char *hash;
 	int sockd, i;
 	u_short count;
 
@@ -13,14 +14,21 @@ int node_smpl_loop(char *hash, char *prnt)
 
 	registerme(sockd, NODETYPE_USER);
 
+	gethash(sockd, &hash);
+
+	printf("Cracking %s ...\n\n", hash);
+
 	do {
-		printf("sockd: %d\n", sockd);
 		count = getwork(sockd, DEF_COUNT, dict);
-		printf("\n%d\n", count);
+		printf("Got %d tries...\n", count);
 
 	} while((i = crackhash(hash, dict, count, 0)) == -1); //md5
 
-	printf("%s\n", dict[i]);
+	solved(sockd, hash, dict[i]);
+
+	printf("\nCRACKED!!\n%s\n", dict[i]);
 
 	raw_close(sockd);
+
+	free(hash);
 }

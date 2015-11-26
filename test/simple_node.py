@@ -24,6 +24,16 @@ print "sending acceptation\n"
 
 p.send("\x01\x02\x02")
 
+print "waiting to offer a hash..."
+
+r = p.recv(12)
+print "hash packet received:"
+print(r.encode("hex"))
+print("sending hash...\n")
+
+p.send("\x02\x02\x00\x00\x20\x00\x00\x00fc4cdf995f3d70226bbfec113823f115")
+p.recv(12)
+
 print "waiting to offer some work..."
 
 r = p.recv(20)
@@ -32,7 +42,7 @@ print "work petition received:"
 print(r.encode("hex"))
 print "sending work 1"
 
-p.send("\x02\x02\x05\x00\x00\x00\x00\x00\x1b\x00\x00\x00\x00\x00\x00\x00aaaa;bb;ccc;ddd;0123456789\x00")
+p.send("\x03\x02\x05\x00\x00\x00\x00\x00\x1b\x00\x00\x00\x00\x00\x00\x00aaaa;bb;ccc;ddd;0123456789\x00")
 r = p.recv(3)
 print r.encode("hex")
 print
@@ -45,7 +55,9 @@ print "work petition received:"
 print(r.encode("hex"))
 print "sending work 2"
 
-p.send("\x02\x02\x05\x00\x00\x00\x00\x00\x20\x00\x00\x00\x00\x00\x00\x00aaaa;cracken;ccc;ddd;0123456789\x00")
+p.send("\x03\x02\x05\x00\x00\x00\x00\x00\x20\x00\x00\x00\x00\x00\x00\x00aaaa;cracken;ccc;ddd;0123456789\x00")
 r = p.recv(3)
 print r.encode("hex")
 
+r = p.recv(200)
+print r.encode("hex")

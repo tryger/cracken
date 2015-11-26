@@ -45,36 +45,51 @@ int recv_hi_packet(int sockd, struct hi_packet *packet)
 
 
 
-int send_hash_packet(int sockd, struct hash_packet *packet, char *data, u_char len)
+int send_hash_packet(int sockd, struct hash_packet *packet, char *hash, u_short hlen, char *plain, u_short plen)
 {
+	int len = hlen + plen;
+
 	char rawp[HASH_LEN + len];
 
 	if(fmt_packet(packet, &rawp, HASH_LEN))
 		return ERR_MALFORMEDPKT;
 
-	fmt_packet(data, (&rawp) + HASH_LEN, len);
+	if(hash != NULL)
+		memcpy((&rawp) + HASH_LEN, hash, hlen);
+	if(plain != NULL)
+		memcpy((&rawp) + HASH_LEN + hlen, plain, plen);
+
 
 	return raw_send(sockd, &rawp, HASH_LEN + len);
 }
-int recv_hash_packet(int sockd, struct getw_packet *packet, char **hash, char **plain)
+int recv_hash_packet(int sockd, struct hash_packet *packet, char **hash, char **plain)
 {
 	char *data = malloc(HASH_LEN);
+	int len;
 
 	raw_recv(sockd, data, HASH_LEN);
 	fmt_packet(data, packet, HASH_LEN);
 
-	data = realloc(data, packet->hash_len + packet->plain_len);
+	len = packet->hash_len + packet->plain_len;
 
-	raw_recv(sockd, data, packet->hash_len + packet->plain_len);
+	data = realloc(data, len);
 
-	*hash = malloc(packet->hash_len);
-	*plain = malloc(packet->plain_len);
+	raw_recv(sockd, data, len);
 
-	memcpy(hash, data, packet->hash_len);
-	memcpy(hash + packet->hash_len, data, packet->plain_len);
+	*hash = malloc(packet->hash_len + 1);
+	if(plain != NULL)
+		*plain = malloc(packet->plain_len + 1);
 
-	//free(data);
-	//Not necessary, **dict pointing to it. Free it with dict
+	memcpy(*hash, data, packet->hash_len);
+	if(plain != NULL)
+		memcpy(*hash, data + packet->hash_len, packet->plain_len);
+
+	*(hash + packet->hash_len) = 0;
+	if(plain != NULL)
+		*(plain + packet->plain_len) = 0;
+
+	free(data);
+	//Free hash and plain somewhere in the future
 }
 
 
