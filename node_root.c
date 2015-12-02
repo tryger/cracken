@@ -6,12 +6,7 @@ void *handle_request(void *);
 
 int node_root_loop()
 {
-	// wait for connection
 	raw_listen(&handle_request);
-
-	// create thread handle_request()
-
-	// send response
 }
 
 void *handle_request(void *desc)
@@ -19,11 +14,17 @@ void *handle_request(void *desc)
 	int sockd = *(int *)desc;
 	char buf[200];
 
-	
+	bzero(&buf, 200);
 	raw_recv(sockd, &buf, 200);
 
-	printf("%x\n", buf);
+	printf("%s", buf);
+	printf("THREAD:\t%d\n", sockd);
 
+	raw_recv(sockd, &buf, 200);
 
 	raw_close(sockd);
+
+	printf("END THREAD\n");
+
+	pthread_exit(0);
 }

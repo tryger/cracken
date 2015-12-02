@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
-#define PORT 7070
+#define PORT "7070"
 
 /*
  * This file implements net operations
@@ -78,37 +78,43 @@ int raw_listen(void *(*handler)())
 {
 	struct addrinfo *addr_s, hints;
 	struct sockaddr_storage p_addr;
-	socklen_t addr_len;
+	socklen_t addr_size;
 	int sockd, peerd, retval, y=1;
 	pthread_t tid;
-
+	
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
 	getaddrinfo(NULL, PORT, &hints, &addr_s);
-	sockd = socket(AF_INET, SOCK_STREAM, 0);
+
+	
+	if ((sockd = socket(addr_s->ai_family, addr_s->ai_socktype, addr_s->ai_protocol)) < 0) {
+		perror("socket()");
+		return -1;
+}
 	setsockopt(sockd, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int));
 
-	retval = bind(sockd, addr_s->ai_addr, addr_s->ai_addrlen);
-	if(retval == -1) 
+	if (bind(sockd, addr_s->ai_addr, addr_s->ai_addrlen) < 0) {
+		perror("bind()");
 		return -1;
-
+	}
 
 	listen(sockd, 5); /* TODO: config max inc connections */
 
-	addr_len = sizeof(p_addr);
-
-	while (peerd = accept(sockd, (struct sockaddr *)&p_addr, &addr_len)) {
+	addr_size = sizeof(struct sockaddr_storage);
+	
+	while ((peerd = accept(sockd, (struct sockaddr *)&p_addr, &addr_size)) >= 0) {
 		if(pthread_create(&tid, NULL, handler, (void *)&peerd) < 0)
 			return -1;
 	}
 	
-	return retval;
+	perror("accept()");
+	return 0;
 }
 
 int raw_close(int sockd)
 {
 	return close(sockd);
-}
+}	
