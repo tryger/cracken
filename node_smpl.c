@@ -12,9 +12,9 @@ int node_smpl_loop(char *prnt)
 
 	sockd = raw_connect(prnt, 7070);
 
-	registerme(sockd, NODETYPE_USER);
+	//registerme(sockd, NODETYPE_USER);
 
-	gethash(sockd, &hash);
+ 	gethash(sockd, &hash);
 
 	printf("Cracking %s ...\n\n", hash);
 

@@ -14,6 +14,8 @@ s.bind(("0.0.0.0", 7070))
 s.listen(4)
 p = s.accept()[0]
 
+
+"""
 print "waiting for register packet..."
 
 r = p.recv(3)
@@ -23,6 +25,8 @@ print(r.encode("hex"))
 print "sending acceptation\n"
 
 p.send("\x01\x02\x02")
+
+"""
 
 print "waiting to offer a hash..."
 

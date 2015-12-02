@@ -4,7 +4,7 @@
 #include <stdlib.h> //
 #include <string.h> //
 #include <netinet/in.h>
-
+#include <pthread.h>
 
 #define PORT 7070
 
@@ -74,12 +74,13 @@ size_t raw_recv(int sockd, char *buf, size_t n)
 	return recv(sockd, buf, n, 0);
 }
 
-int raw_listen(char *buf, size_t buf_len)
+int raw_listen(void *(*handler)())
 {
 	struct addrinfo *addr_s, hints;
 	struct sockaddr_storage p_addr;
 	socklen_t addr_len;
 	int sockd, peerd, retval, y=1;
+	pthread_t tid;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
@@ -98,12 +99,12 @@ int raw_listen(char *buf, size_t buf_len)
 	listen(sockd, 5); /* TODO: config max inc connections */
 
 	addr_len = sizeof(p_addr);
-	peerd = accept(sockd, (struct sockaddr *)&p_addr, &addr_len);
 
-	retval = recv(peerd, buf, buf_len, 0);
-
-	close(peerd);
-
+	while (peerd = accept(sockd, (struct sockaddr *)&p_addr, &addr_len)) {
+		if(pthread_create(&tid, NULL, handler, (void *)&peerd) < 0)
+			return -1;
+	}
+	
 	return retval;
 }
 
