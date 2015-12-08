@@ -45,6 +45,11 @@ struct hash_packet {
 	u_short plain_len;
 };
 
+
+#define HASH_MD5 0
+#define HASH_SHA 1
+// ...
+
 /* GETW packet */
 #define WORK_DEFAULT_COUNT 400  /* ??? */
 

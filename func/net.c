@@ -3,8 +3,9 @@
 #include <netdb.h> //
 #include <stdlib.h> //
 #include <string.h> //
-#include <netinet/in.h>
 #include <pthread.h>
+
+#include "net.h"
 
 #define PORT "7070"
 
@@ -81,6 +82,7 @@ int raw_listen(void *(*handler)())
 	socklen_t addr_size;
 	int sockd, peerd, retval, y=1;
 	pthread_t tid;
+	struct client c;
 	
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
@@ -105,12 +107,23 @@ int raw_listen(void *(*handler)())
 
 	addr_size = sizeof(struct sockaddr_storage);
 	
-	while ((peerd = accept(sockd, (struct sockaddr *)&p_addr, &addr_size)) >= 0) {
-		if(pthread_create(&tid, NULL, handler, (void *)&peerd) < 0)
+	while (peerd = accept(sockd, (struct sockaddr *)&p_addr, &addr_size)) {
+		if (peerd < 0) {
+			perror("accept()");
+			return -1;
+		}
+
+		c.sockd = peerd;
+		if (inet_ntop(AF_INET, &(((struct sockaddr_in *)&p_addr)->sin_addr), c.addr, INET_ADDRSTRLEN) == 0) {
+			perror("inet_ntop()");
+			return -1;
+		};
+		c.port = &(((struct sockaddr_in *)&p_addr)->sin_port);
+
+		if(pthread_create(&tid, NULL, handler, (void *)&c) < 0)
 			return -1;
 	}
-	
-	perror("accept()");
+
 	return 0;
 }
 

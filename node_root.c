@@ -4,26 +4,40 @@
 
 void *handle_request(void *);
 
+FILE *dictp;
+
 int node_root_loop()
 {
+	dictp = open_file("dict.txt");
+
 	raw_listen(&handle_request);
+
+	close_file(dictp);
 }
 
 void *handle_request(void *desc)
 {
-	int sockd = *(int *)desc;
-	char buf[200];
+	int sockd = ((struct client *)desc)->sockd;
+	char *addr = &(((struct client *)desc)->addr);
+	u_short port = ((struct client *)desc)->port;
+	char buf[MAX_PACKET_LEN];
 
-	bzero(&buf, 200);
-	raw_recv(sockd, &buf, 200);
+	//check ip
 
+
+//	bzero(&buf, MAX_PACKET_LEN);
+
+	printf("THREAD:\n%d\n%s\n%d\n", sockd, addr, port);
+
+	get_packet(sockd);
+/*
+	raw_recv(sockd, &buf, MAX_PACKET_LEN);
 	printf("%s", buf);
-	printf("THREAD:\t%d\n", sockd);
 
-	raw_recv(sockd, &buf, 200);
+	raw_recv(sockd, &buf, MAX_PACKET_LEN);
 
 	raw_close(sockd);
-
+*/
 	printf("END THREAD\n");
 
 	pthread_exit(0);

@@ -1,1 +1,1 @@
-gcc main.c node_root.c func/net.c func/proto.c func/packet.c func/crack.c func/hashes/md5.c -lpthread -o node_root -g
+gcc main.c node_smpl.c node_root.c func/net.c func/proto.c func/packet.c func/crack.c func/hashes/md5.c func/dict.c -lpthread -o cracken -g

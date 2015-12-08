@@ -45,19 +45,20 @@ int recv_hi_packet(int sockd, struct hi_packet *packet)
 
 
 
-int send_hash_packet(int sockd, struct hash_packet *packet, char *hash, u_short hlen, char *plain, u_short plen)
+int send_hash_packet(int sockd, struct hash_packet *packet, char *hash, char *plain)
 {
-	int len = hlen + plen;
+	int len = packet->hash_len + packet->plain_len;
 
 	char rawp[HASH_LEN + len];
+	bzero(&rawp, len);
 
 	if(fmt_packet(packet, &rawp, HASH_LEN))
 		return ERR_MALFORMEDPKT;
 
 	if(hash != NULL)
-		memcpy((&rawp) + HASH_LEN, hash, hlen);
+		memcpy(&rawp[HASH_LEN], hash, packet->hash_len);
 	if(plain != NULL)
-		memcpy((&rawp) + HASH_LEN + hlen, plain, plen);
+		memcpy(&rawp[HASH_LEN + packet->hash_len], plain, packet->plain_len);
 
 
 	return raw_send(sockd, &rawp, HASH_LEN + len);
@@ -76,17 +77,18 @@ int recv_hash_packet(int sockd, struct hash_packet *packet, char **hash, char **
 
 	raw_recv(sockd, data, len);
 
-	*hash = malloc(packet->hash_len + 1);
-	if(plain != NULL)
+
+	if(packet->hash_len != 0) {
+		*hash = malloc(packet->hash_len + 1);
+		memcpy(*hash, data, packet->hash_len);
+		*(hash + packet->hash_len) = 0;
+	}
+
+	if(plain != NULL) {
 		*plain = malloc(packet->plain_len + 1);
-
-	memcpy(*hash, data, packet->hash_len);
-	if(plain != NULL)
 		memcpy(*hash, data + packet->hash_len, packet->plain_len);
-
-	*(hash + packet->hash_len) = 0;
-	if(plain != NULL)
 		*(plain + packet->plain_len) = 0;
+	}
 
 	free(data);
 	//Free hash and plain somewhere in the future
@@ -94,14 +96,18 @@ int recv_hash_packet(int sockd, struct hash_packet *packet, char **hash, char **
 
 
 
-int send_getw_packet(int sockd, struct getw_packet *packet)
+int send_getw_packet(int sockd, struct getw_packet *packet, char *data)
 {
-	char rawp[GETW_LEN];
+	int l = GETW_LEN + packet->length;
+	char rawp[l];
 
 	if(fmt_packet(packet, &rawp, GETW_LEN))
 		return ERR_MALFORMEDPKT;
 
-	return raw_send(sockd, &rawp, HI_LEN);
+	if(data != NULL)
+		memcpy(&rawp[GETW_LEN], data, packet->length);
+
+	return raw_send(sockd, &rawp, l);
 }
 int recv_getw_packet(int sockd, struct getw_packet *packet, char **dict)
 {
@@ -110,10 +116,12 @@ int recv_getw_packet(int sockd, struct getw_packet *packet, char **dict)
 	raw_recv(sockd, data, GETW_LEN);
 	fmt_packet(data, packet, GETW_LEN);
 
-	data = realloc(data, packet->length);
+	if(dict != NULL) {
+		data = realloc(data, packet->length);
 
-	raw_recv(sockd, data, packet->length);
-	fmt_work(data, dict, packet->count);
+		raw_recv(sockd, data, packet->length);
+		fmt_work(data, dict, packet->count);
+	}
 
 	//free(data);
 	//Not necessary, **dict pointing to it. Free it with dict

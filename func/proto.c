@@ -1,15 +1,124 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "packet.h"
 #include "net.h"
+
+extern FILE *dictp;
+extern char *prnt;
+extern char *hash;
 
 int _registered = 0;
 
 /* char *prnt can be implemented with global val from config file */
 
-int registerme(int sockd, char nodetype)
+/***************
+ * SERVER CODE */
+int get_packet(int sockd)
 {
-	//int sockd;
+	char buf[MAX_PACKET_LEN];
+
+	raw_recv(sockd, &buf, MAX_PACKET_LEN);
+
+	switch(buf[0]) {
+		case OP_HASH:
+			hash_packet(sockd, &buf);
+			break;
+		case OP_GETW:
+			getw_packet(sockd, &buf);
+			break;
+	}
+
+	raw_close(sockd);
+}
+
+int getw_packet(int sockd, char *buf)
+{
+	struct getw_packet *p = (struct getw_packet *)malloc(GETW_LEN);
+
+	fmt_packet(buf, p, GETW_LEN);
+
+	switch(p->getw_op) {
+		case GETW_RQST:
+			offer_work(sockd, p);
+			break;
+	}
+
+	free(p);
+}
+
+int offer_work(int sockd, struct getw_packet *p)
+{
+	char *data = malloc(0);
+
+	p->length = get_n_pass(dictp, &data, p->count);
+
+	send_getw_packet(sockd, p, data);
+
+	recv_getw_packet(sockd, p, NULL);
+}
+
+
+
+
+int hash_packet(int sockd, char *buf)
+{
+	struct hash_packet *p = (struct hash_packet *)malloc(HASH_LEN);
+
+	fmt_packet(buf, p, HASH_LEN);
+
+	buf += HASH_LEN;
+
+
+	switch(p->hash_op) {
+		case HASH_RQST:
+			offer_hash(sockd, p);
+			break;
+		case HASH_DONE:
+			hash_broken(sockd, p, buf);
+	}
+
+	free(p);
+}
+
+int offer_hash(int sockd, struct hash_packet *p)
+{
+	char buf[HASH_LEN];
+
+	p->hash_op = HASH_OFFR;
+	p->algorithm = HASH_MD5;
+	p->id = 0;
+	p->hash_len = 32;
+	p->plain_len = 0;
+
+	send_hash_packet(sockd, p, hash, NULL);
+
+	recv_hash_packet(sockd, p, NULL, NULL);
+
+	if (*(buf+1) == HASH_ACPT)
+		return 0;
+	return -1;
+}
+
+int hash_broken(int sockd, struct hash_packet *p, char *hash)
+{
+	char hash[p->hash_len];
+	char plain[p->plain_len];
+
+	raw_recv(sockd, &hash, p->hash_len);
+	raw_recv(sockd, &plain, p->plain_len);
+
+	
+
+	// broadcast winwin
+}
+
+/***************
+ * CLIENT CODE */
+  
+int registerme(/*int sockd, */char nodetype)
+{
+	int sockd = raw_connect(prnt, 7070);
 
 	struct hi_packet p = {
 		.op = OP_HI,
@@ -36,10 +145,14 @@ int registerme(int sockd, char nodetype)
 		_registered = 0;
 		return -1;
 	}
+
+	raw_close(sockd);
 }
 
-int gethash(int sockd, char **hash)
+int gethash(/*int sockd,*/ char **hash)
 {
+	int sockd = raw_connect(prnt, 7070);
+
 	struct hash_packet p = {
 		.op = OP_HASH,
 		.hash_op = HASH_RQST,
@@ -54,12 +167,17 @@ int gethash(int sockd, char **hash)
 	recv_hash_packet(sockd, &p, hash, NULL);
 
 	p.hash_op = HASH_ACPT;
+	p.hash_len = 0;
 
 	send_hash_packet(sockd, &p, NULL, 0, NULL, 0);
+
+	raw_close(sockd);
 }
 
-int solved(int sockd, char *hash, char *plain)
+int solved(/*int sockd, */char *hash, char *plain)
 {
+	int sockd = raw_connect(prnt, 7070);
+
 	int hlen = strlen(hash);
 	int plen = strlen(plain);
 
@@ -73,11 +191,15 @@ int solved(int sockd, char *hash, char *plain)
 	};
 
 
-	send_hash_packet(sockd, &p, hash, hlen, plain, plen);
+	send_hash_packet(sockd, &p, hash, plain);
+
+	raw_close(sockd);
 }
 
-u_short getwork(int sockd, u_short count, char **dict)
+u_short getwork(/*int sockd, */u_short count, char **dict)
 {
+	int sockd = raw_connect(prnt, 7070);
+
 	struct getw_packet p = {
 		.op = OP_GETW,
 		.getw_op = GETW_RQST,
@@ -101,4 +223,6 @@ u_short getwork(int sockd, u_short count, char **dict)
 	//raw_close(sockd);
 
 	return p.count;
+
+	raw_close(prnt);
 }
