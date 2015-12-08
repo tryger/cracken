@@ -1,17 +1,23 @@
 #include <stdio.h>
 #include <getopt.h>
+#include <string.h>
 
 char *prnt;
 char *hash;
+char *dict_file;
 
 int main(int argc, char *argv[])
 {
 	char c, t;
 
-	while((c = getopt(argc, argv, "sch:")) != -1) {
+	while((c = getopt(argc, argv, "sch:f:")) != -1) {
 		if (c == 'h') {
 			hash = malloc(32);
 			hash = optarg;
+		}
+		else if (c == 'f') {
+			dict_file = (char *)malloc(strlen(optarg));
+			dict_file = optarg;
 		}
 		else if (c == 's') {
 			t = 1;

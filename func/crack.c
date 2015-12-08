@@ -3,11 +3,18 @@
 int crackhash(char *hash, char *dict[], u_short len, int alg)
 {
 	char buf[33];
+	int ret;
 
 	while(len-- > 0) {
 		md5(dict[len], &buf);
-		if(!strncmp(&buf, hash, 32))
-			return (int)len;
+		if(!strncmp(&buf, hash, 32)) {
+			ret = (int)len;
+			goto end;
+		}
 	}
-	return -1;
+	ret = -1;
+end:
+	free(*dict);
+	free(dict);
+	return ret;
 }

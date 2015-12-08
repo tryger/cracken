@@ -10,25 +10,22 @@ int node_smpl_loop()
 	int sockd, i;
 	u_short count;
 
-	//sockd = raw_connect(prnt, 7070);
-
 	//registerme(sockd, NODETYPE_USER);
 
- 	gethash(/*sockd, */&hash);
+ 	gethash(&hash);
 
 	printf("Cracking %s ...\n\n", hash);
 
 	do {
-		count = getwork(/*sockd, */DEF_COUNT, dict);
+		dict = malloc(DEF_COUNT * sizeof(char *));
+		count = getwork(DEF_COUNT, dict);
 		printf("Got %d tries...\t%s\n", count, dict[0]);
 
 	} while((i = crackhash(hash, dict, count, 0)) == -1); //md5
 
-	solved(/*sockd, */hash, dict[i]);
+	solved(hash, dict[i]);
 
 	printf("\nCRACKED!!\n%s\n", dict[i]);
-
-	//raw_close(sockd);
 
 	free(hash);
 }

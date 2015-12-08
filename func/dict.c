@@ -18,17 +18,19 @@ u_long get_n_pass(FILE *fp, char **buf, u_short cnt)
 	ssize_t i, len=0, count=0;
 	u_long length = 0;
 
-	while(count < 0) {
+	while(count++ < cnt) {
 		line = NULL;
 		i = getline(&line, &len, fp);
 
-		*buf = realloc(*buf, length + i);
+		if(i != -1) {
+			*buf = realloc(*buf, length + i);
 
-		*(line + i - 1) = ';';
+			*(line + i - 1) = ';';
 
-		strncpy(*buf + length, line, i);
+			strncpy(*buf + length, line, i);
 
-		length += i;
+			length += i;
+		}
 	}
 	free(line);
 

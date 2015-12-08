@@ -54,6 +54,8 @@ int offer_work(int sockd, struct getw_packet *p)
 	p->length = get_n_pass(dictp, &data, p->count);
 
 	send_getw_packet(sockd, p, data);
+	
+	free(data);
 
 	recv_getw_packet(sockd, p, NULL);
 }
@@ -102,11 +104,11 @@ int offer_hash(int sockd, struct hash_packet *p)
 
 int hash_broken(int sockd, struct hash_packet *p, char *hash)
 {
-	char hash[p->hash_len];
-	char plain[p->plain_len];
+	char ha[p->hash_len];
+	char pl[p->plain_len];
 
-	raw_recv(sockd, &hash, p->hash_len);
-	raw_recv(sockd, &plain, p->plain_len);
+	raw_recv(sockd, &ha, p->hash_len);
+	raw_recv(sockd, &pl, p->plain_len);
 
 	
 
@@ -218,11 +220,9 @@ u_short getwork(/*int sockd, */u_short count, char **dict)
 
 	p.getw_op = GETW_ACPT;
 
-	send_getw_packet(sockd, &p); 
+	//send_getw_packet(sockd, &p, NULL); 
 
-	//raw_close(sockd);
+	raw_close(sockd);
 
 	return p.count;
-
-	raw_close(prnt);
 }
