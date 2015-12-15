@@ -25,14 +25,15 @@ u_long get_n_pass(FILE *fp, char **buf, u_short cnt)
 		if(i != -1) {
 			*buf = realloc(*buf, length + i);
 
-			*(line + i - 1) = ';';
+			*(line + i - 1) = '\xff';
 
 			strncpy(*buf + length, line, i);
 
 			length += i;
 		}
+
+		free(line);
 	}
-	free(line);
 
 	return length;
 }

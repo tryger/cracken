@@ -78,6 +78,7 @@ int hash_packet(int sockd, char *buf)
 			break;
 		case HASH_DONE:
 			hash_broken(sockd, p, buf);
+			break;
 	}
 
 	free(p);
@@ -102,17 +103,23 @@ int offer_hash(int sockd, struct hash_packet *p)
 	return -1;
 }
 
-int hash_broken(int sockd, struct hash_packet *p, char *hash)
+int hash_broken(int sockd, struct hash_packet *p, char *buf)
 {
-	char ha[p->hash_len];
-	char pl[p->plain_len];
+	char ha[p->hash_len + 1];
+	char pl[p->plain_len + 1];
 
-	raw_recv(sockd, &ha, p->hash_len);
-	raw_recv(sockd, &pl, p->plain_len);
+	memcpy(&ha, buf, p->hash_len);
+	ha[p->hash_len] = '\x00';
+	memcpy(&pl, buf + p->hash_len, p->plain_len);
+	pl[p->plain_len] = '\x00';
+
+	printf("\nHASH BROKEN!!\n");
+	printf("%s\t%s\n", &ha, &pl);
 
 	
-
 	// broadcast winwin
+
+	exit(0);
 }
 
 /***************

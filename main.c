@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
 	char c, t;
 
-	while((c = getopt(argc, argv, "sch:f:")) != -1) {
+	while((c = getopt(argc, argv, "sch:f:p:")) != -1) {
 		if (c == 'h') {
 			hash = malloc(32);
 			hash = optarg;
@@ -23,8 +23,10 @@ int main(int argc, char *argv[])
 			t = 1;
 		}
 		else if (c == 'c'){
-			prnt = "127.0.0.1";
 			t = 0;
+		}
+		else if (c == 'p') {
+			prnt = optarg;
 		}
 	}
 
@@ -34,6 +36,7 @@ int main(int argc, char *argv[])
 		node_smpl_loop();
 
 	free(hash);
+	free(dict_file);
 	
 	return 0;
 }

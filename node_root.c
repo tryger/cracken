@@ -6,9 +6,14 @@ void *handle_request(void *);
 
 FILE *dictp;
 extern char *dict_file;
+extern char *hash;
 
 int node_root_loop()
 {
+	printf("--- CRACKEN SERVER ---\n");
+	printf("Hash: %s\n", hash);
+	printf("Dict: %s\n", dict_file);
+
 	dictp = open_file(dict_file);
 
 	raw_listen(&handle_request);
@@ -24,13 +29,10 @@ void *handle_request(void *desc)
 	
 	//check ip
 
-	printf("THREAD:\n%d\n%s\n%d\n", sockd, addr, port);
-
 	get_packet(sockd);
-
-	printf("END THREAD\n\n");
 
 	raw_close(sockd);
 
 	pthread_exit(0);
+	//exit(0);
 }

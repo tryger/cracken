@@ -122,8 +122,9 @@ int recv_getw_packet(int sockd, struct getw_packet *packet, char **dict)
 		raw_recv(sockd, data, packet->length);
 		fmt_work(data, dict, packet->count);
 	}
-
-	//free(data);
+	else {
+		free(data);
+	}
 	//Not necessary, **dict pointing to it. Free it with dict
 }
 
@@ -137,12 +138,12 @@ int fmt_packet(void *packet, char *buff, size_t n)
 
 int fmt_work(char *data, char **dict, u_char count)
 {
-	char *p = strtok(data, ";");
+	char *p = strtok(data, "\xff");
 	int i = 0;
 
 	do {
 		dict[i++] = p;
-	} while (p = strtok(NULL, ";"));
+	} while (p = strtok(NULL, "\xff"));
 
 	return dict;
 }

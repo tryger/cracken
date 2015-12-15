@@ -15,8 +15,10 @@
 #define HASH_LEN sizeof(struct hash_packet)
 #define GETW_LEN sizeof(struct getw_packet)
 
+#define MAX_PACKET_LEN 300
 
-/* HI packet */
+
+/* HI packet  NOT USED */
 #define HI_REGME 0x01
 #define HI_REGOK 0x02
 #define HI_REGFLT 0x03
@@ -51,7 +53,7 @@ struct hash_packet {
 // ...
 
 /* GETW packet */
-#define WORK_DEFAULT_COUNT 400  /* ??? */
+#define WORK_DEFAULT_COUNT 800  /* ??? */
 
 #define GETW_RQST 0x01
 #define GETW_OFFR 0x02

@@ -98,6 +98,8 @@ int raw_listen(void *(*handler)())
 
 		if(pthread_create(&tid, NULL, handler, (void *)&c) < 0)
 			return -1;
+
+		pthread_detach(tid);
 	}
 
 	return 0;
