@@ -29,6 +29,8 @@ void *handle_request(void *desc)
 	
 	//check ip
 
+	printf("Serving %s:%d\n\n", addr, port);
+
 	get_packet(sockd);
 
 	raw_close(sockd);

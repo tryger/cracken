@@ -53,7 +53,7 @@ struct hash_packet {
 // ...
 
 /* GETW packet */
-#define WORK_DEFAULT_COUNT 800  /* ??? */
+#define WORK_DEFAULT_COUNT 200  /* ??? */
 
 #define GETW_RQST 0x01
 #define GETW_OFFR 0x02
