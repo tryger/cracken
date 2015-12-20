@@ -31,7 +31,7 @@ void *handle_request(void *desc)
 
 	printf("Serving %s:%d\n\n", addr, port);
 
-	get_packet(sockd);
+	while(get_packet(sockd) == 0);
 
 	raw_close(sockd);
 

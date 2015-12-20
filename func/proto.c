@@ -17,39 +17,46 @@ int _registered = 0;
 int get_packet(int sockd)
 {
 	char buf[MAX_PACKET_LEN];
+	int ret;
 
 	raw_recv(sockd, &buf, MAX_PACKET_LEN);
 
 	switch(buf[0]) {
 		case OP_HASH:
-			hash_packet(sockd, &buf);
+			ret = hash_packet(sockd, &buf);
 			break;
 		case OP_GETW:
-			getw_packet(sockd, &buf);
+			ret = getw_packet(sockd, &buf);
 			break;
 	}
 
-	raw_close(sockd);
+	//raw_close(sockd);
+
+	return ret;
 }
 
 int getw_packet(int sockd, char *buf)
 {
 	struct getw_packet *p = (struct getw_packet *)malloc(GETW_LEN);
+	int ret;
 
 	fmt_packet(buf, p, GETW_LEN);
 
 	switch(p->getw_op) {
 		case GETW_RQST:
-			offer_work(sockd, p);
+			ret = offer_work(sockd, p);
 			break;
 	}
 
 	free(p);
+
+	return ret;
 }
 
 int offer_work(int sockd, struct getw_packet *p)
 {
 	char *data = malloc(0);
+	int ret = 0;
 
 	p->length = get_n_pass(dictp, &data, p->count);
 
@@ -57,7 +64,9 @@ int offer_work(int sockd, struct getw_packet *p)
 	
 	free(data);
 
-	recv_getw_packet(sockd, p, NULL);
+	//recv_getw_packet(sockd, p, NULL);
+
+	return ret;
 }
 
 
@@ -66,22 +75,24 @@ int offer_work(int sockd, struct getw_packet *p)
 int hash_packet(int sockd, char *buf)
 {
 	struct hash_packet *p = (struct hash_packet *)malloc(HASH_LEN);
+	int ret = 1;
 
 	fmt_packet(buf, p, HASH_LEN);
 
 	buf += HASH_LEN;
 
-
 	switch(p->hash_op) {
 		case HASH_RQST:
-			offer_hash(sockd, p);
+			ret = offer_hash(sockd, p);
 			break;
 		case HASH_DONE:
-			hash_broken(sockd, p, buf);
+			ret = hash_broken(sockd, p, buf);
 			break;
 	}
 
 	free(p);
+
+	return ret;
 }
 
 int offer_hash(int sockd, struct hash_packet *p)
@@ -96,11 +107,12 @@ int offer_hash(int sockd, struct hash_packet *p)
 
 	send_hash_packet(sockd, p, hash, NULL);
 
-	recv_hash_packet(sockd, p, NULL, NULL);
+	//recv_hash_packet(sockd, p, NULL, NULL);
 
-	if (*(buf+1) == HASH_ACPT)
-		return 0;
-	return -1;
+	//if (*(buf+1) == HASH_ACPT)
+	//	return 0;
+	//return -1;
+	return 0;
 }
 
 int hash_broken(int sockd, struct hash_packet *p, char *buf)
@@ -120,14 +132,16 @@ int hash_broken(int sockd, struct hash_packet *p, char *buf)
 	// broadcast winwin
 
 	exit(0);
+
+	return 1;
 }
 
 /***************
  * CLIENT CODE */
   
-int registerme(/*int sockd, */char nodetype)
+int registerme(int sockd, char nodetype)
 {
-	int sockd = raw_connect(prnt, 7070);
+	//int sockd = raw_connect(prnt, 7070);
 
 	struct hi_packet p = {
 		.op = OP_HI,
@@ -155,12 +169,12 @@ int registerme(/*int sockd, */char nodetype)
 		return -1;
 	}
 
-	raw_close(sockd);
+	//raw_close(sockd);
 }
 
-int gethash(/*int sockd,*/ char **hash)
+int gethash(int sockd, char **hash)
 {
-	int sockd = raw_connect(prnt, 7070);
+	//int sockd = raw_connect(prnt, 7070);
 
 	struct hash_packet p = {
 		.op = OP_HASH,
@@ -175,17 +189,17 @@ int gethash(/*int sockd,*/ char **hash)
 
 	recv_hash_packet(sockd, &p, hash, NULL);
 
-	p.hash_op = HASH_ACPT;
-	p.hash_len = 0;
+	//p.hash_op = HASH_ACPT;
+	//p.hash_len = 0;
 
-	send_hash_packet(sockd, &p, NULL, 0, NULL, 0);
+	//send_hash_packet(sockd, &p, NULL, 0, NULL, 0);
 
-	raw_close(sockd);
+	//raw_close(sockd);
 }
 
-int solved(/*int sockd, */char *hash, char *plain)
+int solved(int sockd, char *hash, char *plain)
 {
-	int sockd = raw_connect(prnt, 7070);
+	//int sockd = raw_connect(prnt, 7070);
 
 	int hlen = strlen(hash);
 	int plen = strlen(plain);
@@ -202,12 +216,12 @@ int solved(/*int sockd, */char *hash, char *plain)
 
 	send_hash_packet(sockd, &p, hash, plain);
 
-	raw_close(sockd);
+	//raw_close(sockd);
 }
 
-u_short getwork(/*int sockd, */u_short count, char **dict)
+u_short getwork(int sockd, u_short count, char **dict)
 {
-	int sockd = raw_connect(prnt, 7070);
+	//int sockd = raw_connect(prnt, 7070);
 
 	struct getw_packet p = {
 		.op = OP_GETW,
@@ -217,7 +231,6 @@ u_short getwork(/*int sockd, */u_short count, char **dict)
 	};
 
 
-	//sockd = raw_connect(prnt, 7070);
 	if(sockd < 0)
 		return -1;
 
@@ -225,11 +238,11 @@ u_short getwork(/*int sockd, */u_short count, char **dict)
 
 	recv_getw_packet(sockd, &p, dict);
 
-	p.getw_op = GETW_ACPT;
+	//p.getw_op = GETW_ACPT;
 
 	//send_getw_packet(sockd, &p, NULL); 
 
-	raw_close(sockd);
+	//raw_close(sockd);
 
 	return p.count;
 }
