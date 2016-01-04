@@ -22,7 +22,6 @@ int node_smpl_loop()
 	do {
 		dict = malloc(work_count * sizeof(char *));
 		count = getwork(sockd, work_count, dict);
-		printf("Got %d tries...\t%s\n", count, dict[0]);
 
 	} while((i = crackhash(hash, dict, count, 0)) == -1); //md5
 

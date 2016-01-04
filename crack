@@ -1,0 +1,4 @@
+time (./cracken -c -p 127.0.0.1 -n 3000) &
+./cracken -c -p 127.0.0.1 -n 3000 &
+./cracken -c -p 127.0.0.1 -n 3000 &
+./cracken -c -p 127.0.0.1 -n 3000 &
